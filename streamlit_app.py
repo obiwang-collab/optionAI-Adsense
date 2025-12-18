@@ -13,6 +13,7 @@ import streamlit.components.v1 as components
 import numpy as np
 from scipy.stats import norm
 import urllib3
+import os
 
 # 忽略 SSL 警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -20,13 +21,9 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 st.set_page_config(layout="wide", page_title="台指期籌碼戰情室 (莊家控盤版)")
 TW_TZ = timezone(timedelta(hours=8))
 
-# 金鑰設定
-try:
-    GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
-    OPENAI_KEY = st.secrets.get("OPENAI_API_KEY", "")
-except FileNotFoundError:
-    GEMINI_KEY = ""
-    OPENAI_KEY = ""
+# 🔥 金鑰設定 - 改用環境變數 (Railway 相容)
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
+OPENAI_KEY = os.environ.get("OPENAI_API_KEY", "")
 
 def get_gemini_model(api_key):
     if not api_key: return None, "未設定"
@@ -922,6 +919,21 @@ def main():
         # 廣告區
         st.markdown("---")
         show_ad_placeholder()
+        
+        # 🔥 頁尾導航 (AdSense 審查必要)
+        st.markdown("---")
+        footer_col1, footer_col2, footer_col3, footer_col4 = st.columns(4)
+        
+        with footer_col1:
+            st.markdown("📖 [關於我們](./關於我們)")
+        with footer_col2:
+            st.markdown("🔒 [隱私權政策](./隱私權政策)")
+        with footer_col3:
+            st.markdown("📜 [使用條款](./使用條款)")
+        with footer_col4:
+            st.markdown("📧 [聯絡我們](./聯絡我們)")
+        
+        st.markdown("<p style='text-align:center;color:#888;font-size:12px;margin-top:20px;'>© 2025 台指期籌碼戰情室. All rights reserved.</p>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
