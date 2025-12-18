@@ -748,34 +748,16 @@ def main():
         
         basis = (futures_price - taiex_now) if (taiex_now and futures_price) else None
         
+        # 計算 P/C 金額比 (供後續使用，但不顯示)
+        call_amt = df_selected[df_selected['Type'].str.contains('Call|買')]['Amount'].sum()
+        put_amt = df_selected[df_selected['Type'].str.contains('Put|賣')]['Amount'].sum()
+        pc_ratio = (put_amt / call_amt * 100) if call_amt > 0 else 0
+        
         st.sidebar.download_button(
             "📥 下載數據", 
             df_selected.to_csv(index=False).encode('utf-8-sig'), 
             f"{selected_code}_data.csv"
         )
-        
-        # === 儀表板 ===
-        c1, c2, c3, c4, c5 = st.columns(5)
-        c1.caption(f"更新時間: {datetime.now(tz=TW_TZ).strftime('%H:%M:%S')}")
-        
-        spot_label = "加權指數 "
-        if manual_spot > 0:
-            spot_label += "(手動)"
-        elif taiex_now:
-            spot_label += "(即時)"
-        else:
-            spot_label += "(無數據)"
-        
-        c2.metric(spot_label, f"{int(taiex_now) if taiex_now else 'N/A'}")
-        c3.metric(f"台指期 ({fut_date[5:]})", f"{int(futures_price) if futures_price else 'N/A'}")
-        c4.metric("基差", f"{basis:.0f}" if basis else "N/A", delta_color="normal" if basis and basis > 0 else "inverse")
-        
-        call_amt = df_selected[df_selected['Type'].str.contains('Call|買')]['Amount'].sum()
-        put_amt = df_selected[df_selected['Type'].str.contains('Put|賣')]['Amount'].sum()
-        pc_ratio = (put_amt / call_amt * 100) if call_amt > 0 else 0
-        c5.metric(f"P/C 金額比", f"{pc_ratio:.1f}%", "偏多" if pc_ratio > 100 else "偏空")
-        
-        st.markdown("---")
         
         # === 法人籌碼區 ===
         st.markdown("### 🏦 三大法人籌碼佈局")
