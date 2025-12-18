@@ -624,17 +624,25 @@ def main():
     
     st.sidebar.caption(f"Gemini: {'✅' if gemini_model else '❌'} | ChatGPT: {'✅' if openai_client else '❌'}")
     
-    # 手動輸入現貨點數
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("### 📊 手動設定現貨")
-    manual_spot = st.sidebar.number_input(
-        "輸入當前大盤點數 (選填)",
-        min_value=0,
-        max_value=30000,
-        value=0,
-        step=10,
-        help="若自動抓取有延遲或收盤後,可手動輸入。輸入 0 則使用自動抓取值"
-    )
+    # 🔥 修改1: 手動輸入現貨移到主要內容區
+    st.markdown("### 📊 現貨價格設定")
+    col_spot1, col_spot2 = st.columns([2, 3])
+    with col_spot1:
+        manual_spot = st.number_input(
+            "輸入當前大盤點數 (選填)",
+            min_value=0,
+            max_value=30000,
+            value=0,
+            step=10,
+            help="若自動抓取有延遲或收盤後,可手動輸入。輸入 0 則使用自動抓取值"
+        )
+    with col_spot2:
+        if manual_spot > 0:
+            st.info(f"✅ 將使用手動輸入: **{int(manual_spot)}** 點")
+        else:
+            st.caption("ℹ️ 將使用自動抓取的即時價格")
+    
+    st.markdown("---")
     
     # 🔥 步驟1: 抓取數據並提取合約列表
     if st.session_state.all_contracts is None:
@@ -717,9 +725,9 @@ def main():
         all_option_data = st.session_state.all_option_data
         
         st.markdown("---")
-        st.markdown(f"## 📊 分析報告: {selected_code}")
+        # 🔥 修改2: 移除分析報告標題區塊
         
-        # 抓取其他數據
+        # 抓取其他數據 (保留數據抓取功能)
         with st.spinner("🔄 正在更新數據..."):
             taiex_now = get_realtime_data()
             futures_price, futures_volume, fut_date = get_futures_data()
@@ -729,11 +737,6 @@ def main():
         # 處理手動輸入
         if manual_spot > 0:
             taiex_now = manual_spot
-            st.sidebar.success(f"✅ 使用手動輸入: {int(manual_spot)} 點")
-        elif taiex_now:
-            st.sidebar.info(f"ℹ️ 自動抓取: {int(taiex_now)} 點")
-        else:
-            st.sidebar.warning("⚠️ 無法取得現貨價格,請手動輸入")
         
         # 過濾選定合約的數據
         df_full = calculate_multi_day_oi_change(all_option_data)
@@ -848,10 +851,9 @@ def main():
         fig = plot_tornado_chart(df_selected, f"{selected_code} 合約", taiex_now)
         st.plotly_chart(fig, use_container_width=True)
         
-        # GEX 分析
+        # 🔥 修改3: GEX 分析 - 移除重複的標題
         gex_data = calculate_dealer_gex(df_selected, taiex_now, settlement_date)
         if gex_data is not None:
-            st.markdown("#### Dealer Gamma Exposure (GEX)")
             fig_gex = plot_gex_chart(gex_data, taiex_now)
             if fig_gex:
                 st.plotly_chart(fig_gex, use_container_width=True)
