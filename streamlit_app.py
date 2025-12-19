@@ -17,7 +17,6 @@ import os
 
 # 忽略 SSL 警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 st.set_page_config(layout="wide", page_title="台指選擇權籌碼分析-莊家思維")
 TW_TZ = timezone(timedelta(hours=8))
 
@@ -1043,4 +1042,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
