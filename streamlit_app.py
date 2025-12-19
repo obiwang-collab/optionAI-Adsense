@@ -650,7 +650,7 @@ def main():
     inject_adsense_head()
     inject_pwa_support()
     
-    st.title("🧛‍♂️ 台指期籌碼戰情室 (莊家控盤版)")
+    st.title("🧛‍♂️ 台指選擇權籌碼分析-莊家思維")
     
     # 側邊欄設定
     if st.sidebar.button("🔄 重新整理"):
@@ -951,7 +951,7 @@ def main():
         with footer_col1:
             with st.expander("📖 關於我們"):
                 st.markdown("""
-                **台指期籌碼戰情室**
+                **台指選擇權籌碼分析**
                 
                 我們致力於提供台灣期貨與選擇權市場的即時數據分析，結合 AI 技術，
                 幫助投資人更清楚地了解市場籌碼結構與莊家佈局。
@@ -1038,9 +1038,10 @@ def main():
                 3. 截圖（如有）
                 """)
         
-        st.markdown("<p style='text-align:center;color:#888;font-size:12px;margin-top:20px;'>© 2025 台指期籌碼戰情室. All rights reserved.</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center;color:#888;font-size:12px;margin-top:20px;'>© 2025 台指選擇權籌碼分析. All rights reserved.</p>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
+
 
 
