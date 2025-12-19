@@ -21,6 +21,44 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 st.set_page_config(layout="wide", page_title="台指選擇權籌碼分析-莊家思維")
 TW_TZ = timezone(timedelta(hours=8))
 
+# 🔥 PWA 支援函數
+def inject_pwa_support():
+    """注入 PWA 必要的 meta 標籤和設定"""
+    pwa_html = """
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/app/static/manifest.json">
+    <meta name="theme-color" content="#FF4B4B">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="莊家思維">
+    <link rel="apple-touch-icon" href="/app/static/icon-192.png">
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/app/static/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registered:', registration.scope);
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed:', err);
+                    });
+            });
+        }
+    </script>
+    
+    <!-- PWA Install Prompt -->
+    <script>
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log('PWA install prompt ready');
+        });
+    </script>
+    """
+    st.markdown(pwa_html, unsafe_allow_html=True)
 # 🔥 金鑰設定 - 改用環境變數 (Railway 相容)
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
 OPENAI_KEY = os.environ.get("OPENAI_API_KEY", "")
@@ -611,6 +649,7 @@ def main():
         st.session_state.all_contracts = None
     
     inject_adsense_head()
+    inject_pwa_support()
     
     st.title("🧛‍♂️ 台指期籌碼戰情室 (莊家控盤版)")
     
@@ -1004,3 +1043,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
