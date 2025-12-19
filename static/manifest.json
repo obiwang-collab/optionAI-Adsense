@@ -1,7 +1,7 @@
 {
-  "name": "台指期籌碼戰情室",
-  "short_name": "籌碼戰情室",
-  "description": "台指期貨與選擇權即時籌碼分析，AI 莊家控盤預測",
+  "name": "台指選擇權-莊家思維分析",
+  "short_name": "莊家思維",
+  "description": "台指選擇權即時籌碼分析，AI 莊家控盤預測",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -9,13 +9,13 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/app/static/icon-192.png",         ← 修改成這樣
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/app/static/icon-512.png",         ← 修改成這樣
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
