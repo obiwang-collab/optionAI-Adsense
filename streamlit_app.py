@@ -18,7 +18,7 @@ import os
 # 忽略 SSL 警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-st.set_page_config(layout="wide", page_title="台指選擇權-莊家思維分析")
+st.set_page_config(layout="wide", page_title="台指選擇權籌碼分析-莊家思維")
 TW_TZ = timezone(timedelta(hours=8))
 
 # 🔥 金鑰設定 - 改用環境變數 (Railway 相容)
@@ -983,7 +983,7 @@ def main():
                 如果您有任何問題、建議或合作意向，歡迎與我們聯繫：
                 
                 **Email：** 
-                - obiwang@gmail.com 
+                - obiwang@gmail.com
                 
                 **回覆時間：**
                 - 我們會在 1-3 個工作天內回覆您的訊息
@@ -1004,5 +1004,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
