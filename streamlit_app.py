@@ -18,7 +18,7 @@ import os
 # 忽略 SSL 警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-st.set_page_config(layout="wide", page_title="台指期籌碼戰情室 (莊家控盤版)")
+st.set_page_config(layout="wide", page_title="台指選擇權-莊家思維分析")
 TW_TZ = timezone(timedelta(hours=8))
 
 # 🔥 金鑰設定 - 改用環境變數 (Railway 相容)
@@ -1004,4 +1004,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
