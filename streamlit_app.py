@@ -15,19 +15,47 @@ from scipy.stats import norm
 import urllib3
 import os
 
-# 忽略 SSL 警告
+# --- 1. 核心初始化 (必須是第一行 Streamlit 指令) ---
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-# 🛑 保持唯一一個 set_page_config 在最頂部
 st.set_page_config(layout="wide", page_title="台指選擇權籌碼分析-莊家思維")
 TW_TZ = timezone(timedelta(hours=8))
 
-# 🔥 PWA 支援函數 (完全保留原本內容)
+# --- 2. 廣告設定 (解決 AdSense 找不到代碼的問題) ---
+ADSENSE_PUB_ID = 'ca-pub-4585150092118682'
+
+def inject_adsense_head():
+    """全域注入 AdSense 腳本到 Header"""
+    # 注入 Script 代碼
+    st.markdown(f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_PUB_ID}" crossorigin="anonymous"></script>', unsafe_allow_html=True)
+    # 增加一個空白組件強制瀏覽器執行環境
+    components.html(f'<!DOCTYPE html><html><body><div style="display:none;">AdSense Preload</div></body></html>', height=0)
+
+def show_ad_placeholder():
+    """顯示頁面中的廣告佔位符"""
+    st.markdown(f"""
+    <div style='background:#f8f9fa;padding:40px;border:2px dashed #dee2e6;text-align:center;'>
+        <p style='color:#6c757d'>廣告贊助商 (ID: {ADSENSE_PUB_ID})</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+# --- 3. PWA 支援 (完全保留您原本的邏輯) ---
 def inject_pwa_support():
-    """注入 PWA 必要的 meta 標籤和設定"""
     pwa_html = """
     <link rel="manifest" href="/app/static/manifest.json">
     <meta name="theme-color" content="#FF4B4B">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/app/static/icon-192.png">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/app/static/sw.js');
+            });
+        }
+    </script>
+    """
+    st.markdown(pwa_html, unsafe_allow_html=True)
+
+# --- 4. 接下來接您原本的金鑰設定與 1000 行邏輯，切記不要再重複定義 set_page_config ---
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="莊家思維">
     <link rel="apple-touch-icon" href="/app/static/icon-192.png">
@@ -1131,6 +1159,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
