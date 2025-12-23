@@ -15,195 +15,68 @@ from scipy.stats import norm
 import urllib3
 import os
 
-# --- 核心初始化 (必須是第1行，且全程式僅限一次) ---
+# ==================== 核心初始化 ====================
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 st.set_page_config(layout="wide", page_title="台指選擇權籌碼分析-莊家思維")
 TW_TZ = timezone(timedelta(hours=8))
 
-# --- 廣告與 PWA 函數設定 (修正 AdSense 找不到代碼的問題) ---
+# ==================== 廣告與 PWA 設定 ====================
 ADSENSE_PUB_ID = 'ca-pub-4585150092118682'
 
 def inject_adsense_head():
     """全域注入 AdSense 腳本到 Header"""
-    st.markdown(f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_PUB_ID}" crossorigin="anonymous"></script>', unsafe_allow_html=True)
-    components.html(f'<!DOCTYPE html><html><body><div style="display:none;">AdSense Preload</div></body></html>', height=0)
+    st.markdown(
+        f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_PUB_ID}" crossorigin="anonymous"></script>', 
+        unsafe_allow_html=True
+    )
+    components.html(
+        f'<!DOCTYPE html><html><body><div style="min-height: 1px;"></div></body></html>', 
+        height=1, 
+        scrolling=False
+    )
 
 def inject_pwa_support():
-    """注入 PWA 支援 (保留原本邏輯)"""
-    pwa_html = f"""
+    """注入 PWA 支援"""
+    pwa_html = """
     <link rel="manifest" href="/app/static/manifest.json">
     <meta name="theme-color" content="#FF4B4B">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="莊家思維">
     <link rel="apple-touch-icon" href="/app/static/icon-192.png">
+    
     <script>
-        if ('serviceWorker' in navigator) {{
-            window.addEventListener('load', function() {{
-                navigator.serviceWorker.register('/app/static/sw.js');
-            }});
-        }}
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/app/static/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registered:', registration.scope);
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed:', err);
+                    });
+            });
+        }
     </script>
     """
     st.markdown(pwa_html, unsafe_allow_html=True)
 
 def show_ad_placeholder():
     """顯示廣告預留位"""
-    st.markdown(f"<div style='background:#f8f9fa;padding:40px;border:2px dashed #dee2e6;text-align:center;'><p style='color:#6c757d'>廣告贊助商 (ID: {ADSENSE_PUB_ID})</p></div>", unsafe_allow_html=True)
+    st.markdown(
+        f"""<div style='background:#f8f9fa;padding:40px;border:2px dashed #dee2e6;text-align:center;'>
+        <p style='color:#6c757d'>廣告位置 (Publisher ID: {ADSENSE_PUB_ID})</p>
+        </div>""", 
+        unsafe_allow_html=True
+    )
 
-# --- 原本程式碼中的金鑰設定與 1000 行邏輯接在下方 ---
-
-def inject_adsense_head():
-    """全域注入 AdSense 腳本到 Header"""
-    # 注入 Script 代碼
-    st.markdown(f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_PUB_ID}" crossorigin="anonymous"></script>', unsafe_allow_html=True)
-    # 增加一個空白組件強制瀏覽器執行環境
-    components.html(f'<!DOCTYPE html><html><body><div style="display:none;">AdSense Preload</div></body></html>', height=0)
-
-def show_ad_placeholder():
-    """顯示頁面中的廣告佔位符"""
-    st.markdown(f"""
-    <div style='background:#f8f9fa;padding:40px;border:2px dashed #dee2e6;text-align:center;'>
-        <p style='color:#6c757d'>廣告贊助商 (ID: {ADSENSE_PUB_ID})</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# --- 3. PWA 支援 (完全保留您原本的邏輯) ---
-def inject_pwa_support():
-    pwa_html = """
-    <link rel="manifest" href="/app/static/manifest.json">
-    <meta name="theme-color" content="#FF4B4B">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" href="/app/static/icon-192.png">
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/app/static/sw.js');
-            });
-        }
-    </script>
-    """
-    st.markdown(pwa_html, unsafe_allow_html=True)
-
-# --- 4. 接下來接您原本的金鑰設定與 1000 行邏輯，切記不要再重複定義 set_page_config ---
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="莊家思維">
-    <link rel="apple-touch-icon" href="/app/static/icon-192.png">
-    
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/app/static/sw.js')
-                    .then(function(registration) {
-                        console.log('ServiceWorker registered:', registration.scope);
-                    })
-                    .catch(function(err) {
-                        console.log('ServiceWorker registration failed:', err);
-                    });
-            });
-        }
-    </script>
-    """
-    st.markdown(pwa_html, unsafe_allow_html=True)
-
-# 🔥 金鑰設定 - 改用環境變數 (Railway 相容)
-GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
-OPENAI_KEY = os.environ.get("OPENAI_API_KEY", "")
-
-# ... (中間保留 get_gemini_model, get_openai_client 等原本 1000 行代碼) ...
-# --- 廣告部分精確修改 ---
-ADSENSE_PUB_ID = 'ca-pub-4585150092118682'
-
-    st.markdown(f"""<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_PUB_ID}" crossorigin="anonymous"></script>""", unsafe_allow_html=True)
-    # 額外使用 components 確保 JS 在某些 Streamlit 版本下能正確觸發
-    components.html(f"""<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_PUB_ID}" crossorigin="anonymous"></script>""", height=0)
-
-def show_ad_placeholder():
-    """顯示實際廣告單元"""
-    st.markdown(f"""
-    <div style='background:#f8f9fa;padding:40px;border:2px dashed #dee2e6;text-align:center;'>
-        <p style='color:#6c757d'>廣告贊助商 (ID: {ADSENSE_PUB_ID})</p>
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="{ADSENSE_PUB_ID}"
-             data-ad-slot="default"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({{}});</script>
-    </div>
-    """, unsafe_allow_html=True)
-
-# ... (中間保留 get_settlement_date, get_realtime_data, get_option_data 等原本邏輯) ...
-
-# 主程式執行區
-def main():
-    # 執行廣告與 PWA 注入
-    inject_adsense_head()
-    inject_pwa_support()
-    
-    # 在側邊欄增加 Ads.txt 指向，協助爬蟲定位
-    st.sidebar.markdown("---")
-    st.sidebar.caption("✅ Ads.txt 授權驗證")
-    st.sidebar.markdown("[點此開啟 /static/ads.txt](/static/ads.txt)")
-
-    # ... (以下繼續您原本 main() 裡面的所有邏輯，包括 tornado 圖表、AI 分析等) ...
-    # (請將原本 main 內部的所有內容直接貼回此處)
-
-if __name__ == "__main__":
-    main()
-def inject_adsense():
-    ADSENSE_ID = "ca-pub-4585150092118682"
-    st.markdown(f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_ID}" crossorigin="anonymous"></script>', unsafe_allow_html=True)
-
-# --- 以下接您原本的其他函數 (如 get_settlement_date, main 等) ---
-
-# 忽略 SSL 警告
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-st.set_page_config(layout="wide", page_title="台指選擇權籌碼分析-莊家思維")
-TW_TZ = timezone(timedelta(hours=8))
-
-# 🔥 PWA 支援函數
-def inject_pwa_support():
-    """注入 PWA 必要的 meta 標籤和設定"""
-    pwa_html = """
-    <!-- PWA Meta Tags -->
-    <link rel="manifest" href="/app/static/manifest.json">
-    <meta name="theme-color" content="#FF4B4B">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="莊家思維">
-    <link rel="apple-touch-icon" href="/app/static/icon-192.png">
-    
-    <!-- Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/app/static/sw.js')
-                    .then(function(registration) {
-                        console.log('ServiceWorker registered:', registration.scope);
-                    })
-                    .catch(function(err) {
-                        console.log('ServiceWorker registration failed:', err);
-                    });
-            });
-        }
-    </script>
-    
-    <!-- PWA Install Prompt -->
-    <script>
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            console.log('PWA install prompt ready');
-        });
-    </script>
-    """
-    st.markdown(pwa_html, unsafe_allow_html=True)
-# 🔥 金鑰設定 - 改用環境變數 (Railway 相容)
+# ==================== API 金鑰設定 ====================
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
 OPENAI_KEY = os.environ.get("OPENAI_API_KEY", "")
 
 def get_gemini_model(api_key):
-    if not api_key: return None, "未設定"
+    if not api_key: 
+        return None, "未設定"
     genai.configure(api_key=api_key)
     try:
         available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
@@ -214,36 +87,32 @@ def get_gemini_model(api_key):
                 if target in model_id.lower():
                     target_model_name = model_id
                     break
-            if target_model_name: break
-        if not target_model_name and available_models: target_model_name = available_models[0]
+            if target_model_name: 
+                break
+        if not target_model_name and available_models: 
+            target_model_name = available_models[0]
         return (genai.GenerativeModel(target_model_name), target_model_name) if target_model_name else (None, "無可用模型")
-    except Exception as e: return None, f"模型設定錯誤: {str(e)}"
+    except Exception as e: 
+        return None, f"模型設定錯誤: {str(e)}"
 
 def get_openai_client(api_key):
-    if not api_key: return None
+    if not api_key: 
+        return None
     return OpenAI(api_key=api_key)
 
 gemini_model, gemini_name = get_gemini_model(GEMINI_KEY)
 openai_client = get_openai_client(OPENAI_KEY)
 MANUAL_SETTLEMENT_FIX = {'202501W1': '2025/01/02'}
 
-# AdSense
-ADSENSE_PUB_ID = 'ca-pub-4585150092118682'
-def inject_adsense_head():
-    st.markdown(f"""<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_PUB_ID}" crossorigin="anonymous"></script>""", unsafe_allow_html=True)
-    components.html(f"""<!DOCTYPE html><html><body><div style="min-height: 1px;"></div></body></html>""", height=1, scrolling=False)
-
-def show_ad_placeholder():
-    st.markdown(f"""<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_PUB_ID}" crossorigin="anonymous"></script>""", unsafe_allow_html=True)
-    st.markdown(f"""<div style='background:#f8f9fa;padding:40px;border:2px dashed #dee2e6;text-align:center;'><p style='color:#6c757d'>廣告位置 (Publisher ID: {ADSENSE_PUB_ID})</p></div>""", unsafe_allow_html=True)
-
-# 核心日期函式
+# ==================== 核心日期函式 ====================
 def get_settlement_date(contract_code):
     code = str(contract_code).strip().upper()
     for key, fix_date in MANUAL_SETTLEMENT_FIX.items():
-        if key in code: return fix_date
+        if key in code: 
+            return fix_date
     try:
-        if len(code) < 6: return "9999/99/99"
+        if len(code) < 6: 
+            return "9999/99/99"
         year, month = int(code[:4]), int(code[4:6])
         c = calendar.monthcalendar(year, month)
         wednesdays = [week[calendar.WEDNESDAY] for week in c if week[calendar.WEDNESDAY] != 0]
@@ -251,15 +120,20 @@ def get_settlement_date(contract_code):
         day = None
         if 'W' in code:
             match = re.search(r'W(\d)', code)
-            if match and len(wednesdays) >= int(match.group(1)): day = wednesdays[int(match.group(1)) - 1]
+            if match and len(wednesdays) >= int(match.group(1)): 
+                day = wednesdays[int(match.group(1)) - 1]
         elif 'F' in code:
             match = re.search(r'F(\d)', code)
-            if match and len(fridays) >= int(match.group(1)): day = fridays[int(match.group(1)) - 1]
+            if match and len(fridays) >= int(match.group(1)): 
+                day = fridays[int(match.group(1)) - 1]
         else:
-            if len(wednesdays) >= 3: day = wednesdays[2]
+            if len(wednesdays) >= 3: 
+                day = wednesdays[2]
         return f"{year}/{month:02d}/{day:02d}" if day else "9999/99/99"
-    except: return "9999/99/99"
+    except: 
+        return "9999/99/99"
 
+# ==================== 數據抓取函式 ====================
 @st.cache_data(ttl=60)
 def get_realtime_data():
     """獲取大盤現貨即時價格"""
@@ -275,7 +149,8 @@ def get_realtime_data():
             if val == '-': val = data['msgArray'][0].get('o', '-')
             if val == '-': val = data['msgArray'][0].get('y', '-')
             if val != '-': taiex = float(val)
-    except: pass
+    except: 
+        pass
     if taiex is None:
         try:
             url = f"https://query1.finance.yahoo.com/v8/finance/chart/%5ETWII?interval=1m&range=1d&_={ts}"
@@ -283,7 +158,8 @@ def get_realtime_data():
             data = res.json()
             price = data['chart']['result'][0]['meta'].get('regularMarketPrice')
             if price: taiex = float(price)
-        except: pass
+        except: 
+            pass
     return taiex
 
 @st.cache_data(ttl=300)
@@ -300,10 +176,12 @@ def get_futures_data():
         try:
             res = requests.post(url, data=payload, headers=headers, timeout=10, verify=False)
             res.encoding = 'utf-8'
-            if "查無資料" in res.text: continue
+            if "查無資料" in res.text: 
+                continue
             
             dfs = pd.read_html(StringIO(res.text))
-            if not dfs: continue
+            if not dfs: 
+                continue
             df = dfs[0]
             
             futures_price = None
@@ -311,15 +189,18 @@ def get_futures_data():
                 if '收盤價' in str(col) or '成交價' in str(col):
                     try: 
                         futures_price = float(str(df.iloc[0][col]).replace(',', ''))
-                        if futures_price > 0: return futures_price, None, query_date
-                    except: pass
-        except: pass
+                        if futures_price > 0: 
+                            return futures_price, None, query_date
+                    except: 
+                        pass
+        except: 
+            pass
     
     return None, None, "N/A"
 
 @st.cache_data(ttl=300)
 def get_institutional_futures_position():
-    """獲取法人期貨淨部位 - 使用 queryType=2"""
+    """獲取法人期貨淨部位"""
     url = "https://www.taifex.com.tw/cht/3/futContractsDate"
     headers = {'User-Agent': 'Mozilla/5.0'}
     
@@ -345,7 +226,6 @@ def get_institutional_futures_position():
                 continue
                 
             df = dfs[0]
-            
             inst_data = {}
             
             for idx, row in df.iterrows():
@@ -377,7 +257,7 @@ def get_institutional_futures_position():
 
 @st.cache_data(ttl=300)
 def get_institutional_option_data():
-    """獲取法人選擇權數據 - 使用 queryType=2"""
+    """獲取法人選擇權數據"""
     url = "https://www.taifex.com.tw/cht/3/callsAndPutsDate"
     headers = {'User-Agent': 'Mozilla/5.0'}
     
@@ -403,7 +283,6 @@ def get_institutional_option_data():
                 continue
             
             df = dfs[0]
-            
             inst_data = {}
             
             for idx, row in df.iterrows():
@@ -437,10 +316,9 @@ def get_institutional_option_data():
     
     return None
 
-# 🔥🔥🔥 核心修正:選擇權數據抓取 - 使用原本驗證過的邏輯
 @st.cache_data(ttl=300)
 def get_option_data_multi_days(days=3):
-    """獲取選擇權全市場數據 (原始版本 - 已驗證可用)"""
+    """獲取選擇權全市場數據"""
     url = "https://www.taifex.com.tw/cht/3/optDailyMarketReport"
     headers = {'User-Agent': 'Mozilla/5.0'}
     all_data = []
@@ -448,57 +326,54 @@ def get_option_data_multi_days(days=3):
     for i in range(30):
         target_date = datetime.now(tz=TW_TZ) - timedelta(days=i)
         query_date = target_date.strftime('%Y/%m/%d')
-        payload = {'queryType': '2', 'marketCode': '0', 'commodity_id': 'TXO', 'queryDate': query_date, 'MarketCode': '0', 'commodity_idt': 'TXO'}
+        payload = {
+            'queryType': '2', 
+            'marketCode': '0', 
+            'commodity_id': 'TXO', 
+            'queryDate': query_date, 
+            'MarketCode': '0', 
+            'commodity_idt': 'TXO'
+        }
         
         try:
             res = requests.post(url, data=payload, headers=headers, timeout=10, verify=False)
             res.encoding = 'utf-8'
-            if "查無資料" in res.text or len(res.text) < 500: continue
+            if "查無資料" in res.text or len(res.text) < 500: 
+                continue
             
             dfs = pd.read_html(StringIO(res.text))
-            if not dfs: continue
+            if not dfs: 
+                continue
             df = dfs[0]
             
-            # 🔥 關鍵修正:精確欄位對應
+            # 精確欄位對應
             col_map = {}
             
             for col in df.columns:
                 col_str = str(col).strip()
                 
-                # OI: 必須先檢查 (避免被Month誤判)
                 if '未沖銷' in col_str and '契約量' in col_str:
                     col_map['OI'] = col
-                
-                # Month: 到期月份(週別) 或第一個包含"契約"的欄位
                 elif '到期月份' in col_str or '週別' in col_str:
                     col_map['Month'] = col
                 elif col_str == '契約' and 'Month' not in col_map:
                     col_map['Month'] = col
-                
-                # Strike: 履約價
                 elif '履約價' in col_str:
                     col_map['Strike'] = col
-                
-                # Type: 買賣權
                 elif '買賣權' in col_str:
                     col_map['Type'] = col
-                
-                # Price: 結算價優先,其次收盤價
                 elif '結算價' in col_str:
                     col_map['Price'] = col
                 elif '收盤價' in col_str and 'Price' not in col_map:
                     col_map['Price'] = col
             
-            # 驗證是否找到所有必要欄位
             required = ['Month', 'Strike', 'Type', 'OI', 'Price']
             if not all(k in col_map for k in required):
                 continue
             
-            # 重新命名欄位
             df_renamed = df.rename(columns={v: k for k, v in col_map.items()})
             df_clean = df_renamed[required].dropna(subset=['Type'])
             
-            # 資料清理
             df_clean['Type'] = df_clean['Type'].astype(str).str.strip()
             df_clean['Strike'] = pd.to_numeric(df_clean['Strike'].astype(str).str.replace(',', ''), errors='coerce')
             df_clean['OI'] = pd.to_numeric(df_clean['OI'].astype(str).str.replace(',', ''), errors='coerce').fillna(0)
@@ -507,36 +382,46 @@ def get_option_data_multi_days(days=3):
             
             if df_clean['OI'].sum() > 0 and len(df_clean) > 10:
                 all_data.append({'date': query_date, 'df': df_clean})
-                if len(all_data) >= days: break
+                if len(all_data) >= days: 
+                    break
         except Exception as e:
             continue
             
     return all_data if len(all_data) >= 1 else None
 
-# 數學計算函數
+# ==================== 數學計算函數 ====================
 def calculate_iv(option_price, spot_price, strike, time_to_expiry, option_type='call', risk_free_rate=0.015):
-    if option_price <= 0 or spot_price <= 0 or strike <= 0 or time_to_expiry <= 0: return None
+    if option_price <= 0 or spot_price <= 0 or strike <= 0 or time_to_expiry <= 0: 
+        return None
     sigma = 0.3
     for i in range(50):
         d1 = (np.log(spot_price / strike) + (risk_free_rate + 0.5 * sigma ** 2) * time_to_expiry) / (sigma * np.sqrt(time_to_expiry))
         d2 = d1 - sigma * np.sqrt(time_to_expiry)
-        if option_type == 'call': price = spot_price * norm.cdf(d1) - strike * np.exp(-risk_free_rate * time_to_expiry) * norm.cdf(d2)
-        else: price = strike * np.exp(-risk_free_rate * time_to_expiry) * norm.cdf(-d2) - spot_price * norm.cdf(-d1)
+        if option_type == 'call': 
+            price = spot_price * norm.cdf(d1) - strike * np.exp(-risk_free_rate * time_to_expiry) * norm.cdf(d2)
+        else: 
+            price = strike * np.exp(-risk_free_rate * time_to_expiry) * norm.cdf(-d2) - spot_price * norm.cdf(-d1)
         vega = spot_price * norm.pdf(d1) * np.sqrt(time_to_expiry)
-        if vega == 0 or abs(price - option_price) < 1e-4: return sigma
+        if vega == 0 or abs(price - option_price) < 1e-4: 
+            return sigma
         sigma -= (price - option_price) / vega
-        if sigma <= 0: return None
+        if sigma <= 0: 
+            return None
     return None
 
 def calculate_greeks(spot_price, strike, time_to_expiry, volatility, option_type='call', risk_free_rate=0.015):
-    if volatility is None or volatility <= 0 or time_to_expiry <= 0: return None, None
+    if volatility is None or volatility <= 0 or time_to_expiry <= 0: 
+        return None, None
     try:
         d1 = (np.log(spot_price / strike) + (risk_free_rate + 0.5 * volatility ** 2) * time_to_expiry) / (volatility * np.sqrt(time_to_expiry))
-        if option_type == 'call': delta = norm.cdf(d1)
-        else: delta = norm.cdf(d1) - 1
+        if option_type == 'call': 
+            delta = norm.cdf(d1)
+        else: 
+            delta = norm.cdf(d1) - 1
         gamma = norm.pdf(d1) / (spot_price * volatility * np.sqrt(time_to_expiry))
         return delta, gamma
-    except: return None, None
+    except: 
+        return None, None
 
 def calculate_dealer_gex(df, spot_price, settlement_date):
     try:
@@ -556,8 +441,10 @@ def calculate_dealer_gex(df, spot_price, settlement_date):
                     if gamma:
                         gex = -gamma * oi * (spot_price ** 2) * 0.01
                         gex_data.append({'Strike': strike, 'Type': option_type, 'OI': oi, 'Gamma': gamma, 'GEX': gex})
-        if gex_data: return pd.DataFrame(gex_data).groupby('Strike')['GEX'].sum().reset_index()
-    except: pass
+        if gex_data: 
+            return pd.DataFrame(gex_data).groupby('Strike')['GEX'].sum().reset_index()
+    except: 
+        pass
     return None
 
 def calculate_risk_reversal(df, spot_price, settlement_date):
@@ -575,8 +462,10 @@ def calculate_risk_reversal(df, spot_price, settlement_date):
                 iv = calculate_iv(price, spot_price, strike, time_to_expiry, option_type)
                 if iv:
                     delta, _ = calculate_greeks(spot_price, strike, time_to_expiry, iv, option_type)
-                    if delta: iv_delta_data.append({'Strike': strike, 'Type': option_type, 'IV': iv, 'Delta': abs(delta)})
-        if not iv_delta_data: return None, None, None
+                    if delta: 
+                        iv_delta_data.append({'Strike': strike, 'Type': option_type, 'IV': iv, 'Delta': abs(delta)})
+        if not iv_delta_data: 
+            return None, None, None
         iv_df = pd.DataFrame(iv_delta_data)
         call_25d = iv_df[(iv_df['Type'] == 'call') & (iv_df['Delta'] > 0.2) & (iv_df['Delta'] < 0.3)]
         put_25d = iv_df[(iv_df['Type'] == 'put') & (iv_df['Delta'] > 0.2) & (iv_df['Delta'] < 0.3)]
@@ -585,26 +474,33 @@ def calculate_risk_reversal(df, spot_price, settlement_date):
             rr = call_25d.iloc[0]['IV'] - put_25d.iloc[0]['IV']
             return atm_iv, rr, atm_strike
         return atm_iv, None, atm_strike
-    except: return None, None, None
+    except: 
+        return None, None, None
 
 def calculate_multi_day_oi_change(all_data):
-    if not all_data or len(all_data) < 1: return None
+    if not all_data or len(all_data) < 1: 
+        return None
     df_latest = all_data[0]['df'].copy()
     if len(all_data) > 1:
         for i in range(1, len(all_data)):
             df_prev = all_data[i]['df'].copy()
-            df_merged = pd.merge(df_latest[['Month', 'Strike', 'Type', 'OI']], df_prev[['Month', 'Strike', 'Type', 'OI']], on=['Month', 'Strike', 'Type'], how='left', suffixes=('', f'_D{i}')).fillna(0)
+            df_merged = pd.merge(
+                df_latest[['Month', 'Strike', 'Type', 'OI']], 
+                df_prev[['Month', 'Strike', 'Type', 'OI']], 
+                on=['Month', 'Strike', 'Type'], 
+                how='left', 
+                suffixes=('', f'_D{i}')
+            ).fillna(0)
             df_latest[f'OI_Change_D{i}'] = df_merged['OI'] - df_merged[f'OI_D{i}']
     return df_latest
 
-# 圖表繪製函數
+# ==================== 圖表繪製函數 ====================
 def plot_tornado_chart(df_target, title_text, spot_price):
     is_call = df_target['Type'].str.contains('買|Call', case=False, na=False)
     df_call = df_target[is_call][['Strike', 'OI', 'Amount']].rename(columns={'OI': 'Call_OI', 'Amount': 'Call_Amt'})
     df_put = df_target[~is_call][['Strike', 'OI', 'Amount']].rename(columns={'OI': 'Put_OI', 'Amount': 'Put_Amt'})
     data = pd.merge(df_call, df_put, on='Strike', how='outer').fillna(0).sort_values('Strike')
     
-    # 🔥 計算總金額
     total_call_amt = data['Call_Amt'].sum()
     total_put_amt = data['Put_Amt'].sum()
     
@@ -628,15 +524,43 @@ def plot_tornado_chart(df_target, title_text, spot_price):
         data['Call_Text'] = data.apply(lambda r: f"{'+' if r['Call_Change']>0 else ''}{int(r['Call_Change'])}" if r['Call_OI']>0 else "", axis=1)
 
     fig = go.Figure()
-    fig.add_trace(go.Bar(y=data['Strike'], x=-data['Put_OI'], orientation='h', name='Put (支撐)', marker_color='#2ca02c', opacity=0.85, text=data['Put_Text'], textposition='outside', hovertemplate='Put OI: %{x}<br>Amt: %{customdata:.2f}億', customdata=data['Put_Amt']/1e8))
-    fig.add_trace(go.Bar(y=data['Strike'], x=data['Call_OI'], orientation='h', name='Call (壓力)', marker_color='#d62728', opacity=0.85, text=data['Call_Text'], textposition='outside', hovertemplate='Call OI: %{x}<br>Amt: %{customdata:.2f}億', customdata=data['Call_Amt']/1e8))
+    fig.add_trace(go.Bar(
+        y=data['Strike'], 
+        x=-data['Put_OI'], 
+        orientation='h', 
+        name='Put (支撐)', 
+        marker_color='#2ca02c', 
+        opacity=0.85, 
+        text=data['Put_Text'], 
+        textposition='outside', 
+        hovertemplate='Put OI: %{x}<br>Amt: %{customdata:.2f}億', 
+        customdata=data['Put_Amt']/1e8
+    ))
+    fig.add_trace(go.Bar(
+        y=data['Strike'], 
+        x=data['Call_OI'], 
+        orientation='h', 
+        name='Call (壓力)', 
+        marker_color='#d62728', 
+        opacity=0.85, 
+        text=data['Call_Text'], 
+        textposition='outside', 
+        hovertemplate='Call OI: %{x}<br>Amt: %{customdata:.2f}億', 
+        customdata=data['Call_Amt']/1e8
+    ))
     
     if spot_price:
         fig.add_hline(y=spot_price, line_dash="dash", line_color="#ff7f0e", line_width=2)
-        fig.add_annotation(x=1.05, y=spot_price, text=f"現貨 {int(spot_price)}", showarrow=False, bgcolor="#ff7f0e", font=dict(color="white"))
+        fig.add_annotation(
+            x=1.05, 
+            y=spot_price, 
+            text=f"現貨 {int(spot_price)}", 
+            showarrow=False, 
+            bgcolor="#ff7f0e", 
+            font=dict(color="white")
+        )
     
-    # 🔥 在圖表兩側加上總金額標註
-    # Put 總金額 (左側)
+    # Put 總金額標註
     fig.add_annotation(
         x=-x_limit * 0.95,
         y=data['Strike'].max() if not data.empty else 0,
@@ -650,7 +574,7 @@ def plot_tornado_chart(df_target, title_text, spot_price):
         yanchor="top"
     )
     
-    # Call 總金額 (右側)
+    # Call 總金額標註
     fig.add_annotation(
         x=x_limit * 0.95,
         y=data['Strike'].max() if not data.empty else 0,
@@ -664,13 +588,12 @@ def plot_tornado_chart(df_target, title_text, spot_price):
         yanchor="top"
     )
     
-    # 🔥 Y軸格式化: 完整數字 + 千分位逗號
     fig.update_layout(
         title=dict(text=title_text, x=0.5), 
         xaxis=dict(range=[-x_limit, x_limit]), 
         yaxis=dict(
-            tickformat=",",  # 加上千分位逗號
-            separatethousands=True  # 啟用千分位分隔
+            tickformat=",",
+            separatethousands=True
         ),
         barmode='overlay', 
         height=750
@@ -678,26 +601,27 @@ def plot_tornado_chart(df_target, title_text, spot_price):
     return fig
 
 def plot_gex_chart(gex_df, spot_price):
-    if gex_df is None or gex_df.empty: return None
+    if gex_df is None or gex_df.empty: 
+        return None
     fig = go.Figure()
     colors = ['green' if x > 0 else 'red' for x in gex_df['GEX']]
     fig.add_trace(go.Bar(x=gex_df['Strike'], y=gex_df['GEX'], marker_color=colors, name='GEX'))
-    if spot_price: fig.add_vline(x=spot_price, line_dash="dash", line_color="orange")
-    # 🔥 X軸格式化: 完整數字 + 千分位逗號
+    if spot_price: 
+        fig.add_vline(x=spot_price, line_dash="dash", line_color="orange")
     fig.update_layout(
         title="Dealer Gamma Exposure (GEX)", 
         xaxis_title="履約價", 
         yaxis_title="GEX", 
         xaxis=dict(
-            tickformat=",",  # 加上千分位逗號
-            separatethousands=True  # 啟用千分位分隔
+            tickformat=",",
+            separatethousands=True
         ),
         height=400, 
         showlegend=False
     )
     return fig
 
-# AI 相關函數
+# ==================== AI 相關函數 ====================
 def prepare_ai_data(df, inst_opt_data, inst_fut, futures_price, spot_price, basis, atm_iv, risk_reversal, gex_summary, data_date):
     df_ai = df.nlargest(30, 'Amount') if 'Amount' in df.columns else df
     cols = [c for c in ['Strike','Type','OI','Amount','OI_Change_D1'] if c in df_ai.columns]
@@ -714,7 +638,8 @@ def prepare_ai_data(df, inst_opt_data, inst_fut, futures_price, spot_price, basi
     inst_fut_str = ""
     if inst_fut:
         for k,v in inst_fut.items(): 
-            if k != 'date': inst_fut_str += f"{k}: {v:+,} 口\n"
+            if k != 'date': 
+                inst_fut_str += f"{k}: {v:+,} 口\n"
     
     gex_str = ""
     if gex_summary is not None:
@@ -755,16 +680,24 @@ def build_ai_prompt(data_str, taiex_price):
     """
 
 def ask_gemini(prompt):
-    if not gemini_model: return "未設定 Gemini Key"
-    try: return gemini_model.generate_content(prompt).text
-    except Exception as e: return str(e)
+    if not gemini_model: 
+        return "未設定 Gemini Key"
+    try: 
+        return gemini_model.generate_content(prompt).text
+    except Exception as e: 
+        return str(e)
 
 def ask_chatgpt(prompt):
-    if not openai_client: return "未設定 OpenAI Key"
+    if not openai_client: 
+        return "未設定 OpenAI Key"
     try:
-        res = openai_client.chat.completions.create(model="gpt-4o-mini", messages=[{"role":"user","content":prompt}])
+        res = openai_client.chat.completions.create(
+            model="gpt-4o-mini", 
+            messages=[{"role":"user","content":prompt}]
+        )
         return res.choices[0].message.content
-    except Exception as e: return str(e)
+    except Exception as e: 
+        return str(e)
 
 def get_next_contracts(df, data_date):
     """從數據中提取未結算的合約"""
@@ -772,12 +705,13 @@ def get_next_contracts(df, data_date):
     targets = []
     for code in unique_codes:
         s_date = get_settlement_date(code)
-        if s_date >= data_date:  # 包含今天
+        if s_date >= data_date:
             targets.append({'code': code, 'date': s_date})
     return targets
 
-# 主程式
+# ==================== 主程式 ====================
 def main():
+    # Session State 初始化
     if 'analysis_unlocked' not in st.session_state: 
         st.session_state.analysis_unlocked = False
     if 'show_analysis_results' not in st.session_state: 
@@ -787,6 +721,7 @@ def main():
     if 'all_contracts' not in st.session_state:
         st.session_state.all_contracts = None
     
+    # 注入廣告與 PWA
     inject_adsense_head()
     inject_pwa_support()
     
@@ -802,7 +737,7 @@ def main():
     
     st.sidebar.caption(f"Gemini: {'✅' if gemini_model else '❌'} | ChatGPT: {'✅' if openai_client else '❌'}")
     
-    # 🔥 修改1: 手動輸入現貨移到主要內容區
+    # 現貨價格設定
     st.markdown("### 📊 現貨價格設定")
     col_spot1, col_spot2 = st.columns([2, 3])
     with col_spot1:
@@ -822,7 +757,7 @@ def main():
     
     st.markdown("---")
     
-    # 🔥 步驟1: 抓取數據並提取合約列表
+    # 步驟1: 抓取數據並提取合約列表
     if st.session_state.all_contracts is None:
         st.markdown("### 📋 步驟 1: 載入選擇權數據")
         
@@ -834,7 +769,6 @@ def main():
             st.info("可能原因: 非交易時間、期交所維護、或網路問題")
             return
         
-        # 從數據中提取合約列表
         df_temp = all_option_data[0]['df']
         data_date = all_option_data[0]['date']
         
@@ -842,27 +776,24 @@ def main():
             st.error("❌ 數據格式錯誤")
             return
         
-        # 提取所有合約
         all_contracts = get_next_contracts(df_temp, data_date)
         
         if not all_contracts:
             st.error("❌ 找不到未結算的合約")
             return
         
-        # 儲存到 session_state
         st.session_state.all_contracts = all_contracts
         st.session_state.all_option_data = all_option_data
         st.session_state.data_date = data_date
         st.rerun()
     
-    # 🔥 步驟2: 選擇合約
+    # 步驟2: 選擇合約
     all_contracts = st.session_state.all_contracts
     data_date = st.session_state.data_date
     
     st.markdown("### 📋 選擇要分析的合約")
     st.caption(f"數據日期: {data_date}")
     
-    # 建立選項
     contract_options = []
     for c in all_contracts:
         contract_type = '週選' if 'W' in c['code'] or 'F' in c['code'] else '月選'
@@ -875,7 +806,6 @@ def main():
         index=0
     )
     
-    # 找到對應的合約資訊
     selected_info = next((opt for opt in contract_options if opt[0] == selected_label), None)
     
     if not selected_info:
@@ -887,7 +817,7 @@ def main():
     
     st.info(f"✅ 已選擇: **{selected_code}** (結算日: {settlement_date})")
     
-    # 🔥 步驟3: 開始分析
+    # 步驟3: 開始分析
     st.markdown("---")
     st.markdown("### 🚀 開始分析")
     
@@ -896,16 +826,15 @@ def main():
         st.session_state.settlement_date = settlement_date
         st.rerun()
     
-    # 🔥 如果已選擇合約,顯示分析結果
+    # 如果已選擇合約,顯示分析結果
     if st.session_state.selected_contract:
         selected_code = st.session_state.selected_contract
         settlement_date = st.session_state.settlement_date
         all_option_data = st.session_state.all_option_data
         
         st.markdown("---")
-        # 🔥 修改2: 移除分析報告標題區塊
         
-        # 抓取其他數據 (保留數據抓取功能)
+        # 抓取其他數據
         with st.spinner("🔄 正在更新數據..."):
             taiex_now = get_realtime_data()
             futures_price, futures_volume, fut_date = get_futures_data()
@@ -926,7 +855,7 @@ def main():
         
         basis = (futures_price - taiex_now) if (taiex_now and futures_price) else None
         
-        # 計算 P/C 金額比 (供後續使用，但不顯示)
+        # 計算 P/C 金額比
         call_amt = df_selected[df_selected['Type'].str.contains('Call|買')]['Amount'].sum()
         put_amt = df_selected[df_selected['Type'].str.contains('Put|賣')]['Amount'].sum()
         pc_ratio = (put_amt / call_amt * 100) if call_amt > 0 else 0
@@ -937,7 +866,7 @@ def main():
             f"{selected_code}_data.csv"
         )
         
-        # === 法人籌碼區 ===
+        # 法人籌碼區
         st.markdown("### 🏦 三大法人籌碼佈局")
         
         institutional_display = []
@@ -1005,13 +934,13 @@ def main():
         
         st.markdown("---")
         
-        # === 龍捲風圖 ===
+        # 龍捲風圖
         st.markdown(f"### 📊 {selected_code} 未平倉分佈 (結算: {settlement_date})")
         
         fig = plot_tornado_chart(df_selected, f"{selected_code} 合約", taiex_now)
         st.plotly_chart(fig, use_container_width=True)
         
-        # 🔥 修改3: GEX 分析 - 移除重複的標題
+        # GEX 分析
         gex_data = calculate_dealer_gex(df_selected, taiex_now, settlement_date)
         if gex_data is not None:
             fig_gex = plot_gex_chart(gex_data, taiex_now)
@@ -1020,13 +949,13 @@ def main():
         
         st.markdown("---")
         
-        # === AI 分析區 ===
+        # AI 分析區
         st.markdown("### 🤖 AI 莊家控盤分析")
         
         if not gemini_model and not openai_client:
             st.error("❌ 未設定 AI API Key,無法使用分析功能")
         else:
-            # 🔥 廣告解鎖機制
+            # 廣告解鎖機制
             if not st.session_state.analysis_unlocked:
                 st.info("📺 請觀看廣告 5 秒後解鎖 AI 分析功能")
                 show_ad_placeholder()
@@ -1034,10 +963,12 @@ def main():
                 col_timer1, col_timer2, col_timer3 = st.columns([1, 2, 1])
                 with col_timer2:
                     if st.button("⏱️ 開始倒數", use_container_width=True, type="primary"):
-                        import time
                         placeholder = st.empty()
                         for i in range(5, 0, -1):
-                            placeholder.markdown(f"<h2 style='text-align:center;color:#ff7f0e;'>⏰ {i} 秒</h2>", unsafe_allow_html=True)
+                            placeholder.markdown(
+                                f"<h2 style='text-align:center;color:#ff7f0e;'>⏰ {i} 秒</h2>", 
+                                unsafe_allow_html=True
+                            )
                             time.sleep(1)
                         st.session_state.analysis_unlocked = True
                         placeholder.empty()
@@ -1082,7 +1013,7 @@ def main():
         st.markdown("---")
         show_ad_placeholder()
         
-        # 🔥 頁尾導航 (AdSense 審查必要) - 改為展開式內容
+        # 頁尾資訊
         st.markdown("---")
         st.markdown("### 📚 網站資訊")
         
@@ -1178,14 +1109,10 @@ def main():
                 3. 截圖（如有）
                 """)
         
-        st.markdown("<p style='text-align:center;color:#888;font-size:12px;margin-top:20px;'>© 2025 台指選擇權籌碼分析. All rights reserved.</p>", unsafe_allow_html=True)
+        st.markdown(
+            "<p style='text-align:center;color:#888;font-size:12px;margin-top:20px;'>© 2025 台指選擇權籌碼分析. All rights reserved.</p>", 
+            unsafe_allow_html=True
+        )
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
