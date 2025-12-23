@@ -81,14 +81,9 @@ GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
 OPENAI_KEY = os.environ.get("OPENAI_API_KEY", "")
 
 # ... (中間保留 get_gemini_model, get_openai_client 等原本 1000 行代碼) ...
-# (請確保將原本代碼中定義這些函式的部分直接貼在下方)
-
 # --- 廣告部分精確修改 ---
 ADSENSE_PUB_ID = 'ca-pub-4585150092118682'
 
-def inject_adsense_head():
-    """將 AdSense JS 注入到頁面最頂端，解決找不到代碼的問題"""
-    # 使用 st.markdown 注入全域 JS
     st.markdown(f"""<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_PUB_ID}" crossorigin="anonymous"></script>""", unsafe_allow_html=True)
     # 額外使用 components 確保 JS 在某些 Streamlit 版本下能正確觸發
     components.html(f"""<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_PUB_ID}" crossorigin="anonymous"></script>""", height=0)
@@ -1159,6 +1154,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
