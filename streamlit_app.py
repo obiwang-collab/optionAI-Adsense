@@ -17,6 +17,95 @@ import os
 
 # 忽略 SSL 警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+# 🛑 保持唯一一個 set_page_config 在最頂部
+st.set_page_config(layout="wide", page_title="台指選擇權籌碼分析-莊家思維")
+TW_TZ = timezone(timedelta(hours=8))
+
+# 🔥 PWA 支援函數 (完全保留原本內容)
+def inject_pwa_support():
+    """注入 PWA 必要的 meta 標籤和設定"""
+    pwa_html = """
+    <link rel="manifest" href="/app/static/manifest.json">
+    <meta name="theme-color" content="#FF4B4B">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="莊家思維">
+    <link rel="apple-touch-icon" href="/app/static/icon-192.png">
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/app/static/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registered:', registration.scope);
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed:', err);
+                    });
+            });
+        }
+    </script>
+    """
+    st.markdown(pwa_html, unsafe_allow_html=True)
+
+# 🔥 金鑰設定 - 改用環境變數 (Railway 相容)
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
+OPENAI_KEY = os.environ.get("OPENAI_API_KEY", "")
+
+# ... (中間保留 get_gemini_model, get_openai_client 等原本 1000 行代碼) ...
+# (請確保將原本代碼中定義這些函式的部分直接貼在下方)
+
+# --- 廣告部分精確修改 ---
+ADSENSE_PUB_ID = 'ca-pub-4585150092118682'
+
+def inject_adsense_head():
+    """將 AdSense JS 注入到頁面最頂端，解決找不到代碼的問題"""
+    # 使用 st.markdown 注入全域 JS
+    st.markdown(f"""<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_PUB_ID}" crossorigin="anonymous"></script>""", unsafe_allow_html=True)
+    # 額外使用 components 確保 JS 在某些 Streamlit 版本下能正確觸發
+    components.html(f"""<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_PUB_ID}" crossorigin="anonymous"></script>""", height=0)
+
+def show_ad_placeholder():
+    """顯示實際廣告單元"""
+    st.markdown(f"""
+    <div style='background:#f8f9fa;padding:40px;border:2px dashed #dee2e6;text-align:center;'>
+        <p style='color:#6c757d'>廣告贊助商 (ID: {ADSENSE_PUB_ID})</p>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="{ADSENSE_PUB_ID}"
+             data-ad-slot="default"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({{}});</script>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ... (中間保留 get_settlement_date, get_realtime_data, get_option_data 等原本邏輯) ...
+
+# 主程式執行區
+def main():
+    # 執行廣告與 PWA 注入
+    inject_adsense_head()
+    inject_pwa_support()
+    
+    # 在側邊欄增加 Ads.txt 指向，協助爬蟲定位
+    st.sidebar.markdown("---")
+    st.sidebar.caption("✅ Ads.txt 授權驗證")
+    st.sidebar.markdown("[點此開啟 /static/ads.txt](/static/ads.txt)")
+
+    # ... (以下繼續您原本 main() 裡面的所有邏輯，包括 tornado 圖表、AI 分析等) ...
+    # (請將原本 main 內部的所有內容直接貼回此處)
+
+if __name__ == "__main__":
+    main()
+def inject_adsense():
+    ADSENSE_ID = "ca-pub-4585150092118682"
+    st.markdown(f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_ID}" crossorigin="anonymous"></script>', unsafe_allow_html=True)
+
+# --- 以下接您原本的其他函數 (如 get_settlement_date, main 等) ---
+
+# 忽略 SSL 警告
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 st.set_page_config(layout="wide", page_title="台指選擇權籌碼分析-莊家思維")
 TW_TZ = timezone(timedelta(hours=8))
 
@@ -1042,6 +1131,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
